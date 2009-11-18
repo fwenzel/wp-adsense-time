@@ -10,6 +10,8 @@ Author URI: http://fredericiana.com/
 */
 
 /** OPTIONS */
+// where do you want it to show up? After the first paragraph ("paragraph") or after the article text ("after")?
+define('ADSENSE_POS', 'paragraph');
 
 // how old do you want the entry to be before showing ads? (days)
 define('ADSENSE_TIME', 1);
@@ -41,17 +43,26 @@ function adsense_time($posttext) { // show some ads
     if (!$single) return $posttext;
 	if (strtotime('+'.ADSENSE_TIME.' day', get_the_time('U')) > time()) return $posttext;
     if ($posts[0]->post_status == 'static') return $posttext; // no adsense on static pages
-	
-	$absatz = strpos($posttext, '</p>');
-	if ($absatz === false) {
-		$returntext = AD_BLOCK."<br />\n\n".$posttext;
-	} else {
-		$absatz += 4;
-		$returntext = substr($posttext, 0, $absatz);
-		$returntext .= "\n".AD_BLOCK."<br />\n";
-		$returntext .= substr($posttext, $absatz);
-	}
-	
+
+    switch (ADSENSE_POS) {
+    case 'paragraph':
+        $absatz = strpos($posttext, '</p>');
+        if ($absatz === false) {
+            $returntext = AD_BLOCK."<br />\n\n".$posttext;
+        } else {
+            $absatz += 4;
+            $returntext = substr($posttext, 0, $absatz);
+            $returntext .= "\n".AD_BLOCK."<br />\n";
+            $returntext .= substr($posttext, $absatz);
+        }
+        break;
+
+    case 'after':
+    default:
+        $returntext = $posttext . '<br/>' . AD_BLOCK;
+        break;
+    }
+
 	return $returntext;
 }
 
